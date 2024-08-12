@@ -46,4 +46,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function clickupTeams()
+    {
+        return $this->hasMany(ClickupTeam::class);
+    }
+    public function getAccessTokenAttribute()
+    {
+        return $this->cu_key;
+    }
 }

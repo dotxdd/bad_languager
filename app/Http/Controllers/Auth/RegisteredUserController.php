@@ -44,23 +44,23 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-        $schemaName = 'tenant_' . $user->id;
-
-        // Tworzenie nowego schematu
-        DB::statement("CREATE SCHEMA `$schemaName`");
-
-        // Ustawienie połączenia z nowym schematem
-        config(['database.connections.tenant.database' => $schemaName]);
-        DB::purge('tenant');
-        DB::reconnect('tenant');
-        DB::setDefaultConnection('tenant');
-
-        // Uruchamianie migracji dla nowego schematu
-        Artisan::call('migrate', [
-            '--database' => 'tenant',
-            '--path' => 'database/migrations/tenant',
-            '--force' => true,
-        ]);
+//        $schemaName = 'tenant_' . $user->id;
+//
+//        // Tworzenie nowego schematu
+//        DB::statement("CREATE SCHEMA `$schemaName`");
+//
+//        // Ustawienie połączenia z nowym schematem
+//        config(['database.connections.tenant.database' => $schemaName]);
+//        DB::purge('tenant');
+//        DB::reconnect('tenant');
+//        DB::setDefaultConnection('tenant');
+//
+//        // Uruchamianie migracji dla nowego schematu
+//        Artisan::call('migrate', [
+//            '--database' => 'tenant',
+//            '--path' => 'database/migrations/tenant',
+//            '--force' => true,
+//        ]);
 
         Auth::login($user);
 

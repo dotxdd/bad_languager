@@ -7,21 +7,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClickUpSpace extends Model
+class ClickupSpace extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'clickup_space_id', 'name', 'workspace_id'
+        'clickup_space_id', 'name', 'team_id'
     ];
 
-    public function workspace()
+    public function teams()
     {
-        return $this->belongsTo(ClickupWorkspace::class, 'workspace_id');
+        return $this->belongsTo(ClickupTeam::class, 'team_id');
     }
 
     public function folders()
     {
         return $this->hasMany(ClickupFolder::class, 'space_id');
+    }
+
+    public function scopeForUser($query, $userId)
+    {
+        return $query->whereHas('team', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        });
     }
 }

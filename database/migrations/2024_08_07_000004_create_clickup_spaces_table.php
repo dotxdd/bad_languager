@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('clickup_space_id')->unique();
             $table->string('name');
-            $table->unsignedBigInteger('workspace_id');
-            $table->foreign('workspace_id')->references('id')->on('clickup_workspaces')->onDelete('cascade');
+            $table->unsignedBigInteger('team_id');
+            $table->foreign('team_id')->references('id')->on('clickup_teams')->onDelete('cascade');
             $table->timestamps();
         });
     }
