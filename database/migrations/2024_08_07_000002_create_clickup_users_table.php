@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('clickup_user_id')->unique();
             $table->string('username');
             $table->string('email')->nullable();
-            $table->timestamps();
             $table->unsignedBigInteger('user_id'); // Dodajemy kolumnę user_id
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Ustawiamy klucz obcy
+            $table->timestamps();
         });
     }
 

@@ -18,18 +18,37 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('status');
             $table->unsignedBigInteger('list_id');
-            $table->unsignedBigInteger('workspace_id');
             $table->unsignedBigInteger('assignee_id')->nullable();
             $table->unsignedBigInteger('creator_id');
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
 
+            // Adding indexes for foreign key columns
+            $table->index('list_id');
+            $table->index('assignee_id');
+            $table->index('creator_id');
+
+            // Foreign key constraints
             $table->foreign('list_id')->references('id')->on('clickup_lists')->onDelete('cascade');
+            $table->foreign('assignee_id')->references('id')->on('clickup_users')->onDelete('set null');
+            $table->foreign('creator_id')->references('id')->on('clickup_users')->onDelete('cascade');
         });
     }
 
     public function down()
     {
+        Schema::table('clickup_tasks', function (Blueprint $table) {
+            // Drop foreign keys first
+            $table->dropForeign(['list_id']);
+            $table->dropForeign(['assignee_id']);
+            $table->dropForeign(['creator_id']);
+
+            // Drop indexes
+            $table->dropIndex(['list_id']);
+            $table->dropIndex(['assignee_id']);
+            $table->dropIndex(['creator_id']);
+        });
+
+        // Drop the table
         Schema::dropIfExists('clickup_tasks');
     }
 };
