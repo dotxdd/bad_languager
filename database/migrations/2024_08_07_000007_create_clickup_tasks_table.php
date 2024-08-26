@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('assignee_id')->nullable();
             $table->unsignedBigInteger('creator_id');
             $table->timestamps();
-
+            $table->string('url');
             // Adding indexes for foreign key columns
             $table->index('list_id');
             $table->index('assignee_id');

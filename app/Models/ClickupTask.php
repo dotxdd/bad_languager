@@ -10,7 +10,7 @@ class ClickupTask extends Model
     use HasFactory;
 
     protected $fillable = [
-        'clickup_task_id', 'name', 'description', 'status', 'list_id', 'assignee_id', 'creator_id', 'created_at', 'updated_at'
+        'clickup_task_id', 'name', 'description', 'status', 'list_id', 'assignee_id', 'creator_id', 'created_at', 'updated_at', 'url'
     ];
 
     public function list()

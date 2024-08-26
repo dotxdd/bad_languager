@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ClickupComment;
 use App\Models\ClickupTeam;
 use App\Models\ClickUpSpace;
 use App\Models\ClickupFolder;
@@ -180,12 +181,13 @@ class FetchUserTeams extends Command
                 foreach ($tasks['tasks'] as $task) {
                     $this->info("List ID: {$list->clickup_list_id}, Task ID: {$task['id']}, Name: {$task['name']}");
 
-                    ClickupTask::updateOrCreate(
+                    $clickupTask = ClickupTask::updateOrCreate(
                         ['clickup_task_id' => $task['id']],
                         [
                             'name' => $task['name'],
                             'description' => $task['description'] ?? '',
                             'status' => $task['status']['status'],
+                            'url'=> $task['url'],
                             'list_id' => $list->id,
                             'assignee_id' => ClickupService::getClickupUserId( $task['assignees'][0]['id'] ?? null) ?? null,
                             'creator_id' => ClickupService::getClickupUserId($task['creator']['id'] ?? null) ?? null,
@@ -193,6 +195,7 @@ class FetchUserTeams extends Command
                             'updated_at' => Carbon::createFromTimestampMs($task['date_updated'])->toDateTimeString()
                         ]
                     );
+                    $this->fetchCommentsForTask($clickupTask, $accessToken);
                 }
             }
         } catch (\Exception $e) {
@@ -229,5 +232,44 @@ class FetchUserTeams extends Command
         } catch (\Exception $e) {
             $this->error("Error fetching users for list ID: {$list->clickup_list_id} - " . $e->getMessage());
         }
+    }
+
+    protected function fetchCommentsForTask($task, $accessToken)
+    {
+            try {
+                $response = $this->client->request('GET', "task/{$task->clickup_task_id}/comment", [
+                    'headers' => [
+                        'Authorization' => $accessToken,
+                    ],
+                ]);
+
+                $comments = json_decode($response->getBody(), true);
+                if (empty($comments['comments'])) {
+                    $this->info("No comments found for task ID: {$task->clickup_task_id}");
+                    $hasMoreComments = false;
+                } else {
+                    foreach ($comments['comments'] as $comment) {
+                        $this->info("Task ID: {$task->clickup_task_id}, Comment ID: {$comment['id']}, Commentor ID: {$comment['user']['id']}");
+
+                        ClickupComment::updateOrCreate(
+                            ['clickup_comment_id' => $comment['id']],
+                            [
+                                'task_id' => $task->id,
+                                'user_id' => ClickupService::getClickupUserId($comment['user']['id']),
+                                'comment' => $comment['comment_text']
+                            ]
+                        );
+                    }
+
+                }
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 429) {
+                    $this->warn("Rate limit reached. Waiting for 60 seconds...");
+                    sleep(60);
+                } else {
+                    $this->error("Error fetching comments for task ID: {$task->clickup_task_id} - " . $e->getMessage());
+                }
+            }
+
     }
 }
