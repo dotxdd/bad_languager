@@ -17,7 +17,10 @@ return new class extends Migration
             $table->unsignedBigInteger('board_id');
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('url')->nullable();
             $table->timestamps();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('trello_members')->onDelete('cascade');
 
             $table->foreign('board_id')->references('id')->on('trello_boards')->onDelete('cascade');
         });
