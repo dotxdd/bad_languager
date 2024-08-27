@@ -22,6 +22,12 @@
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
+        <!-- OpenAI Key -->
+        <div>
+            <x-input-label for="open_ai_key" :value="__('OpenAI Key')" />
+            <x-text-input id="open_ai_key" class="block mt-1 w-full" type="text" name="open_ai_key" :value="old('open_ai_key', $user->open_ai_key)" />
+            <x-input-error :messages="$errors->get('open_ai_key')" class="mt-2" />
+        </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" />

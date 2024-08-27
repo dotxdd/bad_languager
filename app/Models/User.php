@@ -21,7 +21,8 @@ class User extends Authenticatable
         'email',
         'password',
         'cu_key',
-        'tr_key'
+        'tr_key',
+        'open_ai_key'
     ];
 
     /**
