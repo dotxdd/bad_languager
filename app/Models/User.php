@@ -22,7 +22,10 @@ class User extends Authenticatable
         'password',
         'cu_key',
         'tr_key',
-        'open_ai_key'
+        'open_ai_key',
+        'is_downloaded_trello_mail',
+        'is_downloaded_clickup_mail',
+        'is_reportable_mail'
     ];
 
     /**

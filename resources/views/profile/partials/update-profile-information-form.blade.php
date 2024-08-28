@@ -28,6 +28,35 @@
             <x-text-input id="open_ai_key" class="block mt-1 w-full" type="text" name="open_ai_key" :value="old('open_ai_key', $user->open_ai_key)" />
             <x-input-error :messages="$errors->get('open_ai_key')" class="mt-2" />
         </div>
+        <!-- is_downloaded_trello_mail -->
+        <div class="mt-4">
+            <!-- Hidden input to handle unchecked state -->
+            <input type="hidden" name="is_downloaded_trello_mail" value="0">
+            <x-input-label for="is_downloaded_trello_mail" :value="__('Chcę otrzymywać mail o pobraniu danych z Trello')" />
+            <input type="checkbox" id="is_downloaded_trello_mail" name="is_downloaded_trello_mail" value="1"
+                {{ old('is_downloaded_trello_mail', $user->is_downloaded_trello_mail) ? 'checked' : '' }} />
+            <x-input-error :messages="$errors->get('is_downloaded_trello_mail')" class="mt-2" />
+        </div>
+
+        <!-- is_downloaded_clickup_mail -->
+        <div class="mt-4">
+            <!-- Hidden input to handle unchecked state -->
+            <input type="hidden" name="is_downloaded_clickup_mail" value="0">
+            <x-input-label for="is_downloaded_clickup_mail" :value="__('Chcę otrzymywać mail o pobraniu danych z ClickUp')" />
+            <input type="checkbox" id="is_downloaded_clickup_mail" name="is_downloaded_clickup_mail" value="1"
+                {{ old('is_downloaded_clickup_mail', $user->is_downloaded_clickup_mail) ? 'checked' : '' }} />
+            <x-input-error :messages="$errors->get('is_downloaded_clickup_mail')" class="mt-2" />
+        </div>
+
+        <!-- is_reportable_mail -->
+        <div class="mt-4">
+            <!-- Hidden input to handle unchecked state -->
+            <input type="hidden" name="is_reportable_mail" value="0">
+            <x-input-label for="is_reportable_mail" :value="__('Chcę otrzymywać mail o wygenerowaniu raportów')" />
+            <input type="checkbox" id="is_reportable_mail" name="is_reportable_mail" value="1"
+                {{ old('is_reportable_mail', $user->is_reportable_mail) ? 'checked' : '' }} />
+            <x-input-error :messages="$errors->get('is_reportable_mail')" class="mt-2" />
+        </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" />

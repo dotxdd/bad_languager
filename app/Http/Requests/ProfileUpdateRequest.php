@@ -18,6 +18,9 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'open_ai_key' => ['nullable', 'string'],
+            'is_downloaded_trello_mail' => ['boolean'],
+            'is_downloaded_clickup_mail' => ['boolean'],
+            'is_reportable_mail' => ['boolean'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
         ];
     }
