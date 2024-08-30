@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\DataDownloadedMail;
 use App\Models\TrelloBoard;
 use Illuminate\Console\Command;
 use App\Models\TrelloCard;
@@ -9,6 +10,7 @@ use App\Models\TrelloMember;
 use App\Models\User;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use League\OAuth1\Client\Server\Trello;
 
 class FetchTrelloCards extends Command
@@ -70,6 +72,14 @@ class FetchTrelloCards extends Command
                 $this->fetchAndSaveBoardMembers($boardData['id'], $key, $user_id);
 
                 $this->fetchAndSaveBoardCards($boardData['id'], $key);
+            }
+            $user = User::find($user_id);
+            if ($user->is_downloaded_trello_mail) {
+                Mail::to($user->email)->send(new DataDownloadedMail(
+                    $user,
+                    'Trello',
+
+                ));
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             if ($e->getCode() == 429) {

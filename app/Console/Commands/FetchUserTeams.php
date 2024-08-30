@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\DataDownloadedMail;
 use App\Models\ClickupComment;
 use App\Models\ClickupTeam;
 use App\Models\ClickUpSpace;
@@ -14,6 +15,7 @@ use Illuminate\Console\Command;
 use App\Models\User;
 use GuzzleHttp\Client;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class FetchUserTeams extends Command
 {
@@ -64,6 +66,14 @@ class FetchUserTeams extends Command
                 }
             } catch (\Exception $e) {
                 $this->error("Error fetching teams for user ID: {$user->id} - " . $e->getMessage());
+            }
+            if ($user->is_downloaded_clickup_mail) {
+
+                Mail::to($user->email)->send(new DataDownloadedMail(
+                    $user,
+                    'ClickUp',
+
+                ));
             }
         }
     }
