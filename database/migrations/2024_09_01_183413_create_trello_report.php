@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('trello_report_table', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('trello_card_id')->unique()->nullable();
-            $table->unsignedBigInteger('assignee_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->text('explict_message');
             $table->boolean('is_explict')->default(true);
@@ -27,7 +26,6 @@ return new class extends Migration
             $table->index('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('trello_card_id')->references('id')->on('trello_cards')->onDelete('cascade');
-            $table->foreign('assignee_id')->references('id')->on('trello_members')->onDelete('cascade');
         });
     }
 
@@ -37,13 +35,11 @@ return new class extends Migration
             // Drop foreign keys first
             $table->dropForeign(['user_id']);
             $table->dropForeign(['trello_card_id']);
-            $table->dropForeign(['assignee_id']);
 
 
             // Drop indexes
             $table->dropIndex(['user_id']);
             $table->dropIndex(['trello_card_id']);
-            $table->dropIndex(['assignee_id']);
 
         });
 

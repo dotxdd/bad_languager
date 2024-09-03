@@ -19,7 +19,6 @@ class TrelloReport extends Authenticatable
     protected $fillable = [
         'clickup_task_id',
         'clickup_comment_id',
-        'assignee_id',
         'user_id',
         'explict_message',
         'is_explict'

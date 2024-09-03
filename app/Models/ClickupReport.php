@@ -17,8 +17,8 @@ class ClickupReport extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'trello_card_id',
-        'assignee_id',
+        'clickup_task_id',
+        'clickup_comment_id',
         'user_id',
         'explict_message',
         'is_explict',

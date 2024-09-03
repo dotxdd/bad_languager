@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\ClickupComment;
+use App\Models\ClickupReport;
 use App\Models\ClickupTask;
 use App\Models\User;
 use App\Services\GPTService;
@@ -20,8 +21,7 @@ class ClickupReportGenerate extends Command
         $users = User::whereNotNull('open_ai_key')->get();
 
         if ($users->isEmpty()) {
-            $this->info('No users with an OpenAI API key found.');
-            return 0; // Exit the command gracefully
+            return 0;
         }
 
         foreach ($users as $user) {
@@ -35,7 +35,6 @@ class ClickupReportGenerate extends Command
             $comments = ClickupComment::whereDate('created_at', $yesterday)->get();
 
             if ($tasks->isEmpty() && $comments->isEmpty()) {
-                $this->info("No tasks or comments found for user: {$user->email}");
                 continue;
             }
 
@@ -57,8 +56,6 @@ class ClickupReportGenerate extends Command
             try {
                 $response = $gptService->checkContentForVulgarity($jsonPayload, $user->open_ai_key);
 
-                $flaggedTasks = [];
-                $flaggedComments = [];
 
                 if (isset($response['choices'][0]['message']['content'])) {
                     $gptResult = json_decode($response['choices'][0]['message']['content'], true);
@@ -66,7 +63,7 @@ class ClickupReportGenerate extends Command
                     $flaggedTasks = $gptResult['tasks'] ?? [];
                     $flaggedComments = $gptResult['comments'] ?? [];
 
-                    $this->displayFlaggedContent($user->email, $flaggedTasks, $flaggedComments);
+                    $this->addReportData($user, $flaggedTasks, $flaggedComments);
                 } else {
                     $this->warn("No valid response from GPT-3.5 for user: {$user->email}");
                 }
@@ -87,24 +84,43 @@ class ClickupReportGenerate extends Command
      * @param array $comments
      * @return void
      */
-    private function displayFlaggedContent(string $userEmail, array $tasks, array $comments): void
+    private function addReportData(User $user, array $tasks, array $comments): void
     {
         if (!empty($tasks)) {
-            $this->info("Flagged Tasks for user: {$userEmail}");
             foreach ($tasks as $task) {
-                $this->line("- Task ID: {$task['clickup_task_id']}, Description: {$task['description']}");
+               $taskData = ClickupTask::where('clickup_task_id',$task['clickup_task_id'])->first();
+                ClickupReport::updateOrCreate(
+                    [
+                        'clickup_task_id' => $taskData->id,
+                        'clickup_comment_id' => null
+                    ],
+                    [
+                        'user_id' => $user->id,
+                        'explict_message' => $task['description'],
+                        'is_explict' => 0
+                    ]
+                );
             }
-        } else {
-            $this->info("No flagged tasks for user: {$userEmail}");
+
         }
 
+
+
         if (!empty($comments)) {
-            $this->info("Flagged Comments for user: {$userEmail}");
             foreach ($comments as $comment) {
-                $this->line("- Comment ID: {$comment['clickup_comment_id']}, Comment: {$comment['comment']}");
-            }
-        } else {
-            $this->info("No flagged comments for user: {$userEmail}");
+                $commentData = ClickupComment::where('clickup_comment_id',$comment['clickup_comment_id'])->first();
+
+                ClickupReport::updateOrCreate(
+                    [
+                        'clickup_comment_id' => $commentData->id,
+                        'clickup_task_id' => null
+                    ],
+                    [
+                        'user_id' => $user->id,
+                        'explict_message' => $comment['comment'],
+                        'is_explict' => 0
+                    ]
+                );            }
         }
     }
 }
