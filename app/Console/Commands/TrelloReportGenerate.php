@@ -2,19 +2,19 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ClickupComment;
-use App\Models\ClickupReport;
-use App\Models\ClickupTask;
+use App\Models\TrelloCard;
+use App\Models\TrelloComment;
+use App\Models\TrelloReport;
 use App\Models\User;
 use App\Services\GPTService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
-class ClickupReportGenerate extends Command
+class TrelloReportGenerate extends Command
 {
-    protected $signature = 'clickup:report-generate';
-    protected $description = 'Fetch teams, spaces, folders, lists, users, and tasks for all users with a cu_key from ClickUp API';
-
+    protected $signature = 'trello:report-generate';
+    protected $description = 'Check Trello card descriptions and comments for inappropriate content using GPT-3.5 and save reports.';
 
     public function handle(): int
     {
@@ -30,38 +30,36 @@ class ClickupReportGenerate extends Command
 
             $yesterday = Carbon::yesterday();
 
-            $tasks = ClickupTask::whereDate('created_at', $yesterday)->get();
+            $card = TrelloCard::whereDate('created_at', $yesterday)->get();
 
-            $comments = ClickupComment::whereDate('created_at', $yesterday)->get();
+            $comments = TrelloComment::whereDate('created_at', $yesterday)->get();
 
-            if ($tasks->isEmpty() && $comments->isEmpty()) {
+            if ($card->isEmpty() && $comments->isEmpty()) {
                 continue;
             }
-
             $jsonPayload = [
-                'tasks' => $tasks->map(function ($task) {
+                'card' => $card->map(function ($card) {
                     return [
-                        'clickup_task_id' => $task->clickup_task_id,
-                        'description' => $task->description,
+                        'trello_card_id' => $card->trello_id,
+                        'description' => $card->description,
                     ];
                 })->toArray(),
                 'comments' => $comments->map(function ($comment) {
                     return [
-                        'clickup_comment_id' => $comment->clickup_comment_id,
+                        'trello_comment_id' => $comment->trello_comment_id,
                         'comment' => $comment->comment,
                     ];
                 })->toArray(),
             ];
+
             try {
                 $response = $gptService->checkContentForVulgarity($jsonPayload, $user->open_ai_key);
-
                 if (isset($response[0]['message']['content'])) {
                     $gptResult = json_decode($response[0]['message']['content'], true);
 
-                    $flaggedTasks = $gptResult['tasks'] ?? [];
+                    $flaggedCards = $gptResult['card'] ?? [];
                     $flaggedComments = $gptResult['comments'] ?? [];
-
-                    $this->addReportData($user, $flaggedTasks, $flaggedComments);
+                    $this->addReportData($user, $flaggedCards, $flaggedComments);
                 } else {
                     $this->warn("No valid response from GPT-3.5 for user: {$user->email}");
                 }
@@ -82,19 +80,19 @@ class ClickupReportGenerate extends Command
      * @param array $comments
      * @return void
      */
-    private function addReportData(User $user, array $tasks, array $comments): void
+    private function addReportData(User $user, array $cards, array $comments): void
     {
-        if (!empty($tasks)) {
-            foreach ($tasks as $task) {
-               $taskData = ClickupTask::where('clickup_task_id',$task['clickup_task_id'])->first();
-                ClickupReport::updateOrCreate(
+        if (!empty($cards)) {
+            foreach ($cards as $card) {
+                $cardData = TrelloCard::where('trello_id',$card['trello_card_id'])->first();
+                TrelloReport::updateOrCreate(
                     [
-                        'clickup_task_id' => $taskData->id,
-                        'clickup_comment_id' => null
+                        'trello_card_id' => $cardData->id,
+                        'trello_comment_id' => null
                     ],
                     [
                         'user_id' => $user->id,
-                        'explict_message' => $task['description'],
+                        'explict_message' => $card['description'],
                         'is_explict' => 0
                     ]
                 );
@@ -106,12 +104,13 @@ class ClickupReportGenerate extends Command
 
         if (!empty($comments)) {
             foreach ($comments as $comment) {
-                $commentData = ClickupComment::where('clickup_comment_id',$comment['clickup_comment_id'])->first();
 
-                ClickupReport::updateOrCreate(
+                $commentData = TrelloComment::where('trello_comment_id',$comment['trello_comment_id'])->first();
+
+                TrelloReport::updateOrCreate(
                     [
-                        'clickup_comment_id' => $commentData->id,
-                        'clickup_task_id' => null
+                        'trello_comment_id' => $commentData->id,
+                        'trello_card_id' => null
                     ],
                     [
                         'user_id' => $user->id,

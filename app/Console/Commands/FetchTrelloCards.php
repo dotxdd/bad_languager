@@ -4,20 +4,19 @@ namespace App\Console\Commands;
 
 use App\Mail\DataDownloadedMail;
 use App\Models\TrelloBoard;
-use Illuminate\Console\Command;
 use App\Models\TrelloCard;
+use App\Models\TrelloComment; // Import the TrelloComment model
 use App\Models\TrelloMember;
 use App\Models\User;
 use GuzzleHttp\Client;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use League\OAuth1\Client\Server\Trello;
 
 class FetchTrelloCards extends Command
 {
     protected $signature = 'trello:fetch-cards';
     protected $description = 'Fetch the last 100 cards and members from Trello for all users with a Trello key';
-
     protected $client;
     protected $rateLimitWaitTime = 60;
 
@@ -36,7 +35,7 @@ class FetchTrelloCards extends Command
             $this->fetchAndSaveData($user);
         }
 
-        $this->info('Cards and members fetched and saved for all users.');
+        $this->info('Cards, members, and comments fetched and saved for all users.');
         return 0;
     }
 
@@ -70,31 +69,22 @@ class FetchTrelloCards extends Command
                 );
 
                 $this->fetchAndSaveBoardMembers($boardData['id'], $key, $user_id);
-
                 $this->fetchAndSaveBoardCards($boardData['id'], $key);
             }
+
             $user = User::find($user_id);
             if ($user->is_downloaded_trello_mail) {
-                Mail::to($user->email)->send(new DataDownloadedMail(
-                    $user,
-                    'Trello',
-
-                ));
+                Mail::to($user->email)->send(new DataDownloadedMail($user, 'Trello'));
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             if ($e->getCode() == 429) {
-
                 $this->handleRateLimit();
                 $this->fetchDataFromTrelloBoards($key, $user_id);
             } else {
                 Log::error('Client Error: ' . $e->getMessage(), ['response' => $e->getResponse()->getBody()->getContents()]);
             }
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
-            Log::error('Server Error: ' . $e->getMessage(), ['response' => $e->getResponse()->getBody()->getContents()]);
-        } catch (\GuzzleHttp\Exception\ConnectException $e) {
-            Log::error('Connection Error: ' . $e->getMessage());
         } catch (\Exception $e) {
-            Log::error('General Error: ' . $e->getMessage());
+            Log::error('Error: ' . $e->getMessage());
         }
     }
 
@@ -181,7 +171,7 @@ class FetchTrelloCards extends Command
                     $creatorId = $actions[0]['idMemberCreator'] ?? null;
                     $creator = TrelloMember::where('trello_user_id', $creatorId)->first();
 
-                    TrelloCard::updateOrCreate(
+                    $card = TrelloCard::updateOrCreate(
                         ['trello_id' => $cardData['id'], 'board_id' => $board->id],
                         [
                             'name' => $cardData['name'],
@@ -190,25 +180,50 @@ class FetchTrelloCards extends Command
                             'url' => $cardData['url']
                         ]
                     );
+
+                    // Fetch and save comments for this card
+                    $this->fetchAndSaveCardComments($card, $key);
                 }
 
                 $page++;
-            } catch (\GuzzleHttp\Exception\ClientException $e) {
-                if ($e->getCode() == 429) {
-                    $this->handleRateLimit();
-                } else {
-                    Log::error('Client Error when fetching cards: ' . $e->getMessage(), ['response' => $e->getResponse()->getBody()->getContents()]);
-                }
-            } catch (\GuzzleHttp\Exception\ServerException $e) {
-                Log::error('Server Error when fetching cards: ' . $e->getMessage(), ['response' => $e->getResponse()->getBody()->getContents()]);
-            } catch (\GuzzleHttp\Exception\ConnectException $e) {
-                Log::error('Connection Error when fetching cards: ' . $e->getMessage());
             } catch (\Exception $e) {
-                Log::error('General Error when fetching cards: ' . $e->getMessage());
+                Log::error('Error when fetching cards: ' . $e->getMessage());
             }
         } while (count($cards) === $limit);
     }
 
+    protected function fetchAndSaveCardComments($card, $key)
+    {
+        $url = "https://api.trello.com/1/cards/{$card->trello_id}/actions";
+
+        try {
+            $response = $this->client->get($url, [
+                'query' => [
+                    'token' => $key,
+                    'key' => env('TRELLO_API_KEY'),
+                    'filter' => 'commentCard'
+                ]
+            ]);
+
+            $comments = json_decode($response->getBody()->getContents(), true);
+            Log::info('Trello Card Comments:', ['card_id' => $card->trello_id, 'comments' => $comments]);
+
+            foreach ($comments as $commentData) {
+
+                $member = TrelloMember::where('trello_user_id', $commentData['idMemberCreator'])->first();
+
+                TrelloComment::updateOrCreate(
+                    ['trello_comment_id' => $commentData['id'], 'card_id' => $card->id],
+                    [
+                        'comment' => $commentData['data']['text'],
+                        'created_by' => $member->id ?? null
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error('Error when fetching comments: ' . $e->getMessage());
+        }
+    }
 
     protected function handleRateLimit()
     {

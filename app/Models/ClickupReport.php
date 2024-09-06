@@ -28,6 +28,17 @@ class ClickupReport extends Authenticatable
     protected $table='clickup_report_table';
 
 
-
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function comment()
+    {
+        return $this->belongsTo(ClickupComment::class);
+    }
+    public function task()
+    {
+        return $this->belongsTo(ClickupTask::class);
+    }
 
 }
