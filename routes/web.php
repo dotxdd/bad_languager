@@ -39,7 +39,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/clickup/callback', [ClickUpController::class, 'handleCallback'])->name('clickup.callback');
     Route::delete('/clickup/disconnect', [ClickupController::class, 'deleteClickupConnection'])->name('clickup.disconnect');
 
+    Route::prefix('clickup-data')->group(function () {
 
+        Route::get('/whole/users', [\App\Http\Controllers\ClickupDataController::class, 'getWholeToxicUsers'])->name('clickup.toxic.whole.users');
+        Route::get('/whole/users-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getMonthlyWholeToxicUsers'])->name('clickup.toxic.whole.monthly');
+        Route::get('/whole/tasks', [\App\Http\Controllers\ClickupDataController::class, 'getWholeTasksData'])->name('clickup.toxic.whole.tasks');
+        Route::get('/whole/tasks-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getWholeTasksDataMonth'])->name('clickup.toxic.whole.tasks.monthly');
+        Route::get('/whole/comments', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsData'])->name('clickup.toxic.whole.comments');
+        Route::get('/whole/comments-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsMonth'])->name('clickup.toxic.whole.comments.monthly');
+    });
 
 
     // Route for handling the callback after authentication
