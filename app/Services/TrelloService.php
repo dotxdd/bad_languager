@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class TrelloService
 {
-    public static function getToxicUsersRank(User $user)
+    public static function getToxicUsersRank(User $user, $pageSize = 10)
     {
         $tasks = TrelloReport::where('trello_report_table.user_id', $user->id)
             ->where('trello_report_table.is_explict', 0)
@@ -50,10 +50,10 @@ class TrelloService
             return null;
         })->filter();
 
-        return $result;
+        return $result->paginate($pageSize);
     }
 
-    public static function getToxicUsersRankMont(User $user, Carbon $date)
+    public static function getToxicUsersRankMont(User $user, Carbon $date, $pageSize = 10)
     {
         $tasks = TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_card_id')
@@ -96,10 +96,10 @@ class TrelloService
             return null;
         })->filter();
 
-        return $result;
+        return $result->paginate($pageSize);
     }
 
-    public static function getWholeTasksList(User $user)
+    public static function getWholeTasksList(User $user, $pageSize = 10)
     {
         return TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_card_id')
@@ -109,9 +109,9 @@ class TrelloService
             ->leftJoin('trello_members', 'trello_cards.created_by', '=', 'trello_members.id')
             ->selectRaw('trello_cards.name as card_name, trello_cards.description as card_description
                 , trello_boards.name as board_name,  trello_members.name, trello_cards.url')
-            ->get();
+            ->paginate($pageSize);
     }
-    public static function getWholeTasksListMonth(User $user, Carbon $date)
+    public static function getWholeTasksListMonth(User $user, Carbon $date, $pageSize = 10)
     {
         return TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_card_id')
@@ -122,10 +122,10 @@ class TrelloService
             ->leftJoin('trello_members', 'trello_cards.created_by', '=', 'trello_members.id')
             ->selectRaw('trello_cards.name as card_name, trello_cards.description as card_description
                 , trello_boards.name as board_name,  trello_members.name, trello_cards.url')
-            ->get();
+            ->paginate($pageSize);
     }
 
-    public static function getWholeTasksComments(User $user)
+    public static function getWholeTasksComments(User $user, $pageSize = 10)
     {
         return TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_comment_id')
@@ -137,9 +137,9 @@ class TrelloService
 
             ->selectRaw('trello_comments.comment as comment, trello_cards.name as card_name,
                  trello_boards.name as board_name,  trello_members.name, trello_cards.url')
-            ->get();
+            ->paginate($pageSize);
     }
-    public static function getWholeTasksCommentsMonth(User $user, Carbon $date)
+    public static function getWholeTasksCommentsMonth(User $user, Carbon $date, $pageSize = 10)
     {
         return TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_comment_id')
@@ -152,6 +152,6 @@ class TrelloService
 
             ->selectRaw('trello_comments.comment as comment, trello_cards.name as card_name,
                  trello_boards.name as board_name,  trello_members.name, trello_cards.url')
-            ->get();
+            ->paginate($pageSize);
     }
 }
