@@ -48,6 +48,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/whole/comments', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsData'])->name('clickup.toxic.whole.comments');
         Route::get('/whole/comments-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsMonth'])->name('clickup.toxic.whole.comments.monthly');
     });
+    Route::prefix('trello-data')->group(function () {
+
+        Route::get('/whole/users', [\App\Http\Controllers\TrelloDataController::class, 'getWholeToxicUsers'])->name('trello.toxic.whole.users');
+        Route::get('/whole/users-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getMonthlyWholeToxicUsers'])->name('clickup.toxic.whole.monthly');
+        Route::get('/whole/tasks', [\App\Http\Controllers\TrelloDataController::class, 'getWholeTasksData'])->name('clickup.toxic.whole.tasks');
+        Route::get('/whole/tasks-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getWholeTasksDataMonth'])->name('clickup.toxic.whole.tasks.monthly');
+        Route::get('/whole/comments', [\App\Http\Controllers\TrelloDataController::class, 'getWholeCommentsData'])->name('clickup.toxic.whole.comments');
+        Route::get('/whole/comments-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getWholeCommentsMonth'])->name('clickup.toxic.whole.comments.monthly');
+    });
 
 
     // Route for handling the callback after authentication

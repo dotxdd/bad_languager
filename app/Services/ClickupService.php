@@ -17,15 +17,17 @@ class ClickupService
     }
     public static function getToxicUsersRank(User $user)
     {
-        $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id) // Specify the table for 'user_id'
-        ->whereNotNull('clickup_report_table.clickup_task_id') // Specify the table for 'clickup_task_id'
-        ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
+        $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
+        ->whereNotNull('clickup_report_table.clickup_task_id')
+        ->where('clickup_report_table.is_explict', 0)
+            ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_tasks.creator_id as clickup_user_id')
             ->groupBy('clickup_tasks.creator_id')
             ->get();
 
-        $comments = ClickupReport::where('clickup_report_table.user_id', $user->id) // Specify the table for 'user_id'
-        ->whereNotNull('clickup_report_table.clickup_comment_id') // Specify the table for 'clickup_comment_id'
+        $comments = ClickupReport::where('clickup_report_table.user_id', $user->id)
+        ->whereNotNull('clickup_report_table.clickup_comment_id')
+            ->where('clickup_report_table.is_explict', 0)
         ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_comments.user_id as clickup_user_id')
             ->groupBy('clickup_comments.user_id')
@@ -62,6 +64,7 @@ class ClickupService
         $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
         ->whereNotNull('clickup_report_table.clickup_task_id')
             ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->where('clickup_report_table.is_explict', 0)
         ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_tasks.creator_id as clickup_user_id')
             ->groupBy('clickup_tasks.creator_id')
@@ -70,6 +73,7 @@ class ClickupService
         $comments = ClickupReport::where('clickup_report_table.user_id', $user->id)
         ->whereNotNull('clickup_report_table.clickup_comment_id')
             ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->where('clickup_report_table.is_explict', 0)
         ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_comments.user_id as clickup_user_id')
             ->groupBy('clickup_comments.user_id')
@@ -105,6 +109,7 @@ class ClickupService
         {
             return ClickupReport::where('clickup_report_table.user_id', $user->id)
                 ->whereNotNull('clickup_report_table.clickup_task_id')
+                ->where('clickup_report_table.is_explict', 0)
                 ->leftJoin('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
                 ->leftJoin('clickup_lists', 'clickup_tasks.list_id', '=', 'clickup_lists.id')
                 ->leftJoin('clickup_folders', 'clickup_lists.folder_id', '=', 'clickup_folders.id')
@@ -119,6 +124,7 @@ class ClickupService
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_task_id')
+            ->where('clickup_report_table.is_explict', 0)
             ->whereMonth('clickup_report_table.created_at', $date->month)
             ->leftJoin('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->leftJoin('clickup_lists', 'clickup_tasks.list_id', '=', 'clickup_lists.id')
@@ -135,6 +141,7 @@ class ClickupService
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_comment_id')
+            ->where('clickup_report_table.is_explict', 0)
             ->leftJoin('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->leftJoin('clickup_tasks', 'clickup_comments.task_id', '=', 'clickup_tasks.id')
             ->leftJoin('clickup_lists', 'clickup_tasks.list_id', '=', 'clickup_lists.id')
@@ -150,6 +157,7 @@ class ClickupService
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_comment_id')
+            ->where('clickup_report_table.is_explict', 0)
             ->whereMonth('clickup_report_table.created_at', $date->month)
             ->leftJoin('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->leftJoin('clickup_tasks', 'clickup_comments.task_id', '=', 'clickup_tasks.id')
