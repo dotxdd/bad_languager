@@ -25,7 +25,8 @@ class User extends Authenticatable
         'open_ai_key',
         'is_downloaded_trello_mail',
         'is_downloaded_clickup_mail',
-        'is_reportable_mail'
+        'is_reportable_mail',
+        'is_admin'
     ];
 
     /**
