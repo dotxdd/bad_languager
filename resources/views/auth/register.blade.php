@@ -1,6 +1,6 @@
 <x-guest-layout>
     <style>
-        /* Styling similar to the previous page */
+        /* General styling for the layout */
         body {
             font-family: 'Figtree', sans-serif;
             background-color: #F0F8FF;
@@ -40,6 +40,7 @@
         label {
             font-weight: bold;
             color: #00008B;
+            font-family: 'Figtree', sans-serif;
         }
 
         input {
@@ -49,6 +50,7 @@
             width: 100%;
             margin-top: 0.5rem;
             margin-bottom: 1rem;
+            font-family: 'Figtree', sans-serif;
         }
 
         input:focus {
@@ -69,6 +71,7 @@
             cursor: pointer;
             text-decoration: none;
             margin-left: 1rem;
+            font-family: 'Figtree', sans-serif;
         }
 
         .btn:hover {
@@ -78,6 +81,7 @@
         a {
             color: #00008B;
             text-decoration: underline;
+            font-family: 'Figtree', sans-serif;
         }
 
         a:hover {

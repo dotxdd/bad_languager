@@ -8,7 +8,11 @@ module.exports = {
         './resources/js/**/*.vue',
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                retro: ['"Press Start 2P"', 'cursive'],  // Retro font
+            },
+        },
     },
     plugins: [],
 }
