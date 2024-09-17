@@ -6,6 +6,9 @@ use App\Models\TrelloMember;
 use App\Models\TrelloReport;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 class TrelloService
 {
@@ -13,8 +16,8 @@ class TrelloService
     {
         $tasks = TrelloReport::where('trello_report_table.user_id', $user->id)
             ->where('trello_report_table.is_explict', 0)
-        ->whereNotNull('trello_report_table.trello_card_id')
-        ->join('trello_cards', 'trello_report_table.trello_card_id', '=', 'trello_cards.id')
+            ->whereNotNull('trello_report_table.trello_card_id')
+            ->join('trello_cards', 'trello_report_table.trello_card_id', '=', 'trello_cards.id')
             ->selectRaw('count(trello_report_table.id) as report_count, trello_cards.created_by as trello_user_id')
             ->groupBy('trello_cards.created_by')
             ->get();
@@ -22,7 +25,7 @@ class TrelloService
         $comments = TrelloReport::where('trello_report_table.user_id', $user->id)
             ->where('trello_report_table.is_explict', 0)
             ->whereNotNull('trello_report_table.trello_comment_id')
-        ->join('trello_comments', 'trello_report_table.trello_comment_id', '=', 'trello_comments.id')
+            ->join('trello_comments', 'trello_report_table.trello_comment_id', '=', 'trello_comments.id')
             ->selectRaw('count(trello_report_table.id) as report_count, trello_comments.created_by as trello_user_id')
             ->groupBy('trello_comments.created_by')
             ->get();
@@ -36,6 +39,7 @@ class TrelloService
                 ];
             })
             ->values();
+
         $result = $merged->map(function ($item) {
             $trelloUser = TrelloMember::where('id', $item['trello_user_id'])->first();
             if ($trelloUser) {
@@ -50,7 +54,15 @@ class TrelloService
             return null;
         })->filter();
 
-        return $result->paginate($pageSize);
+        // Paginate the result
+        $currentPage = Paginator::resolveCurrentPage();
+        $itemCollection = new Collection($result);
+        $currentItems = $itemCollection->slice(($currentPage - 1) * $pageSize, $pageSize)->all();
+        $paginatedItems = new LengthAwarePaginator($currentItems, $itemCollection->count(), $pageSize, $currentPage, [
+            'path' => Paginator::resolveCurrentPath()
+        ]);
+
+        return $paginatedItems;
     }
 
     public static function getToxicUsersRankMont(User $user, Carbon $date, $pageSize = 10)
@@ -82,6 +94,7 @@ class TrelloService
                 ];
             })
             ->values();
+
         $result = $merged->map(function ($item) {
             $trelloUser = TrelloMember::where('id', $item['trello_user_id'])->first();
             if ($trelloUser) {
@@ -96,7 +109,15 @@ class TrelloService
             return null;
         })->filter();
 
-        return $result->paginate($pageSize);
+        // Paginate the result
+        $currentPage = Paginator::resolveCurrentPage();
+        $itemCollection = new Collection($result);
+        $currentItems = $itemCollection->slice(($currentPage - 1) * $pageSize, $pageSize)->all();
+        $paginatedItems = new LengthAwarePaginator($currentItems, $itemCollection->count(), $pageSize, $currentPage, [
+            'path' => Paginator::resolveCurrentPath()
+        ]);
+
+        return $paginatedItems;
     }
 
     public static function getWholeTasksList(User $user, $pageSize = 10)
