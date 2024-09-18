@@ -2,14 +2,13 @@
     <div class="container mx-auto mt-8">
         <h2 class="text-3xl font-bold mb-6 text-gray-800">Trello Monthly Report</h2>
 
-        <!-- Datepicker -->
         <div class="mb-6">
-            <label for="month-picker" class="block text-lg font-semibold text-gray-700">Select Date:</label>
-            <input id="month-picker" type="date" class="mt-2 p-2 border border-gray-300 rounded-md shadow-sm w-full bg-white">
+            <label for="date-picker" class="block text-lg font-semibold text-gray-700">Select Month and Year:</label>
+            <select id="date-picker" class="p-2 border border-gray-300 rounded-md shadow-sm w-full bg-white">
+            </select>
         </div>
 
         <div class="bg-white shadow-lg rounded-lg p-6">
-            <!-- Tabela dla użytkowników -->
             <h3 class="text-2xl font-semibold mb-4 text-blue-600">Users Monthly Report</h3>
             <div class="overflow-x-auto">
                 <table id="users-table" class="min-w-full divide-y divide-gray-200 border-collapse">
@@ -25,7 +24,6 @@
             </div>
             <div id="users-pagination" class="flex justify-end mt-4"></div>
 
-            <!-- Tabela dla zadań -->
             <h3 class="text-2xl font-semibold mt-8 mb-4 text-blue-600">Tasks Monthly Report</h3>
             <div class="overflow-x-auto">
                 <table id="tasks-table" class="min-w-full divide-y divide-gray-200 border-collapse">
@@ -43,7 +41,6 @@
             </div>
             <div id="tasks-pagination" class="flex justify-end mt-4"></div>
 
-            <!-- Tabela dla komentarzy -->
             <h3 class="text-2xl font-semibold mt-8 mb-4 text-blue-600">Comments Monthly Report</h3>
             <div class="overflow-x-auto">
                 <table id="comments-table" class="min-w-full divide-y divide-gray-200 border-collapse">
@@ -65,21 +62,41 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const monthPicker = document.getElementById('month-picker');
-            console.log('t');
+            const datePicker = document.getElementById('date-picker');
+
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            function generateDateOptions() {
+                let options = '';
+                for (let year = currentYear - 10; year <= currentYear; year++) {
+                    for (let month = 1; month <= 12; month++) {
+                        const formattedMonth = String(month).padStart(2, '0');
+                        const formattedDate = `${year}-${formattedMonth}`;
+                        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
+                        options += `<option value="${formattedDate}">${monthName} ${year}</option>`;
+                    }
+                }
+                datePicker.innerHTML = options;
+            }
+
+            generateDateOptions();
+
+            datePicker.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+
             const endpoints = [
                 {
-                    url: '{{ route('clickup.toxic.whole.monthly') }}',
+                    url: '{{ route('trello.toxic.whole.monthly') }}',
                     tableId: 'users-table',
                     paginationId: 'users-pagination'
                 },
                 {
-                    url: '{{ route('clickup.toxic.whole.tasks.monthly') }}',
+                    url: '{{ route('trello.toxic.whole.tasks.monthly') }}',
                     tableId: 'tasks-table',
                     paginationId: 'tasks-pagination'
                 },
                 {
-                    url: '{{ route('clickup.toxic.whole.comments.monthly') }}',
+                    url: '{{ route('trello.toxic.whole.comments.monthly') }}',
                     tableId: 'comments-table',
                     paginationId: 'comments-pagination'
                 }
@@ -92,7 +109,7 @@
             }
 
             function loadData(url, tableId, paginationId, page, date) {
-                fetch(`${url}?page=${page}&date=${date}`)
+                fetch(`${url}?page=${page}&month=${date}`)
                     .then(response => response.json())
                     .then(data => {
                         const tableBody = document.querySelector(`#${tableId} tbody`);
@@ -128,38 +145,26 @@
                             }
                         });
 
-                        setupPagination(paginationDiv, data.links, url, tableId, paginationId, date);
-                    })
-                    .catch(error => console.error('Error fetching data:', error));
-            }
+                        const pagination = data.links.map(link => `
+                            <a href="#" data-page="${link.label}" class="px-4 py-2 mx-1 border rounded ${link.active ? 'bg-blue-500 text-white' : 'text-blue-500'}">${link.label}</a>
+                        `).join('');
+                        paginationDiv.innerHTML = pagination;
 
-            function setupPagination(paginationDiv, links, url, tableId, paginationId, date) {
-                paginationDiv.innerHTML = '';
-                links.forEach(link => {
-                    const pageButton = document.createElement('button');
-                    pageButton.innerText = link.label.replace('&laquo;', '«').replace('&raquo;', '»');
-                    pageButton.className = `mx-1 px-3 py-1 border rounded-lg ${link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`;
-                    pageButton.addEventListener('click', () => {
-                        if (!link.active && link.url) {
-                            const page = new URL(link.url).searchParams.get('page');
-                            loadData(url, tableId, paginationId, page, date);
-                        }
+                        paginationDiv.querySelectorAll('a').forEach(link => {
+                            link.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                const page = this.dataset.page;
+                                loadData(url, tableId, paginationId, page, date);
+                            });
+                        });
                     });
-                    paginationDiv.appendChild(pageButton);
-                });
             }
 
-            monthPicker.addEventListener('change', function () {
-                const selectedDate = new Date(this.value);
-                const firstDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-                const formattedDate = firstDayOfMonth.toISOString().split('T')[0];
-                updateReports(formattedDate);
-            });
+            updateReports(datePicker.value);
 
-            const currentDate = new Date();
-            const firstDayOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            monthPicker.value = firstDayOfCurrentMonth.toISOString().split('T')[0];
-            updateReports(firstDayOfCurrentMonth.toISOString().split('T')[0]);
+            datePicker.addEventListener('change', () => {
+                updateReports(datePicker.value);
+            });
         });
     </script>
 </x-app-layout>

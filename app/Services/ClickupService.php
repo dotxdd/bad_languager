@@ -6,6 +6,9 @@ use App\Models\ClickupReport;
 use App\Models\ClickUpUser;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 class ClickupService
 {
@@ -56,25 +59,31 @@ class ClickupService
             return null;
         })->filter();
 
-        return $result->paginate($pageSize);
-    }
+        $currentPage = Paginator::resolveCurrentPage();
+        $itemCollection = new Collection($result);
+        $currentItems = $itemCollection->slice(($currentPage - 1) * $pageSize, $pageSize)->all();
+        $paginatedItems = new LengthAwarePaginator($currentItems, $itemCollection->count(), $pageSize, $currentPage, [
+            'path' => Paginator::resolveCurrentPath()
+        ]);
+
+        return $paginatedItems;    }
 
     public static function getToxicUsersRankMonth(User $user, Carbon $date, $pageSize = 10)
     {
         $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
-        ->whereNotNull('clickup_report_table.clickup_task_id')
-            ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->whereNotNull('clickup_report_table.clickup_task_id')
+            ->whereRaw("DATE_FORMAT(clickup_report_table.created_at, '%Y-%m') = ?", [$date->format('Y-m')])
             ->where('clickup_report_table.is_explict', 0)
-        ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
+            ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_tasks.creator_id as clickup_user_id')
             ->groupBy('clickup_tasks.creator_id')
             ->get();
 
         $comments = ClickupReport::where('clickup_report_table.user_id', $user->id)
-        ->whereNotNull('clickup_report_table.clickup_comment_id')
-            ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->whereNotNull('clickup_report_table.clickup_comment_id')
+            ->whereRaw("DATE_FORMAT(clickup_report_table.created_at, '%Y-%m') = ?", [$date->format('Y-m')])
             ->where('clickup_report_table.is_explict', 0)
-        ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
+            ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_comments.user_id as clickup_user_id')
             ->groupBy('clickup_comments.user_id')
             ->get();
@@ -102,8 +111,14 @@ class ClickupService
             return null;
         })->filter();
 
-        return $result->paginate($pageSize);
-    }
+        $currentPage = Paginator::resolveCurrentPage();
+        $itemCollection = new Collection($result);
+        $currentItems = $itemCollection->slice(($currentPage - 1) * $pageSize, $pageSize)->all();
+        $paginatedItems = new LengthAwarePaginator($currentItems, $itemCollection->count(), $pageSize, $currentPage, [
+            'path' => Paginator::resolveCurrentPath()
+        ]);
+
+        return $paginatedItems;    }
 
      public static function getWholeTasksList(User $user, $pageSize = 10)
         {
@@ -125,15 +140,15 @@ class ClickupService
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_task_id')
             ->where('clickup_report_table.is_explict', 0)
-            ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->whereRaw("DATE_FORMAT(clickup_report_table.created_at, '%Y-%m') = ?", [$date->format('Y-m')])
             ->leftJoin('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->leftJoin('clickup_lists', 'clickup_tasks.list_id', '=', 'clickup_lists.id')
             ->leftJoin('clickup_folders', 'clickup_lists.folder_id', '=', 'clickup_folders.id')
             ->leftJoin('clickup_spaces', 'clickup_folders.space_id', '=', 'clickup_spaces.id')
             ->leftJoin('clickup_users', 'clickup_tasks.creator_id', '=', 'clickup_users.id')
             ->selectRaw('clickup_tasks.name as task_name, clickup_tasks.description as task_description
-                , clickup_lists.name as list_name, clickup_folders.name as folder_name,
-                clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+            , clickup_lists.name as list_name, clickup_folders.name as folder_name,
+            clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
             ->paginate($pageSize);
     }
 
@@ -158,7 +173,7 @@ class ClickupService
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_comment_id')
             ->where('clickup_report_table.is_explict', 0)
-            ->whereMonth('clickup_report_table.created_at', $date->month)
+            ->whereRaw("DATE_FORMAT(clickup_report_table.created_at, '%Y-%m') = ?", [$date->format('Y-m')])
             ->leftJoin('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->leftJoin('clickup_tasks', 'clickup_comments.task_id', '=', 'clickup_tasks.id')
             ->leftJoin('clickup_lists', 'clickup_tasks.list_id', '=', 'clickup_lists.id')
@@ -166,8 +181,8 @@ class ClickupService
             ->leftJoin('clickup_spaces', 'clickup_folders.space_id', '=', 'clickup_spaces.id')
             ->leftJoin('clickup_users', 'clickup_comments.user_id', '=', 'clickup_users.id')
             ->selectRaw('clickup_tasks.name as task_name, clickup_comments.comment as task_comments
-                , clickup_lists.name as list_name, clickup_folders.name as folder_name,
-                clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+            , clickup_lists.name as list_name, clickup_folders.name as folder_name,
+            clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
             ->paginate($pageSize);
     }
 }

@@ -49,6 +49,14 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('clickup-data')->group(function () {
 
+        Route::get('/whole-report', function () {
+            return view('whole_report');
+        })->name('clickup.whole.report');
+
+        Route::get('/monthly-report', function () {
+            return view('monthly_report');
+        })->name('clickup.monthly.report');
+
         Route::get('/whole/users', [\App\Http\Controllers\ClickupDataController::class, 'getWholeToxicUsers'])->name('clickup.toxic.whole.users');
         Route::get('/whole/users-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getMonthlyWholeToxicUsers'])->name('clickup.toxic.whole.monthly');
         Route::get('/whole/tasks', [\App\Http\Controllers\ClickupDataController::class, 'getWholeTasksData'])->name('clickup.toxic.whole.tasks');

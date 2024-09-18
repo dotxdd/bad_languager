@@ -20,7 +20,7 @@ class TrelloDataController
     public static function getMonthlyWholeToxicUsers(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $pageSize = $request->input('page_size', 10); // Default page size to 10
 
         return response()->json(Services\TrelloService::getToxicUsersRankMont($user, $date, $pageSize));
@@ -37,7 +37,7 @@ class TrelloDataController
     public static function getWholeTasksDataMonth(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $pageSize = $request->input('page_size', 10); // Default page size to 10
 
         return response()->json(Services\TrelloService::getWholeTasksListMonth($user, $date, $pageSize));
@@ -54,7 +54,7 @@ class TrelloDataController
     public static function getWholeCommentsMonth(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $pageSize = $request->input('page_size', 10); // Default page size to 10
 
         return response()->json(Services\TrelloService::getWholeTasksCommentsMonth($user, $date, $pageSize));

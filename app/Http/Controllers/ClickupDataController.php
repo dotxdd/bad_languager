@@ -12,42 +12,41 @@ class ClickupDataController
     {
         $user = Auth::user();
 
-        return Services\ClickupService::getToxicUsersRank($user);
+        return  response()->json(Services\ClickupService::getToxicUsersRank($user));
     }
     public static function getMonthlyWholeToxicUsers(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
 
-
-        return Services\ClickupService::getToxicUsersRankMonth($user, $date);
+        return  response()->json(Services\ClickupService::getToxicUsersRankMonth($user, $date));
     }
 
     public static function getWholeTasksData()
     {
         $user = Auth::user();
 
-        return Services\ClickupService::getWholeTasksList($user);
+        return  response()->json(Services\ClickupService::getWholeTasksList($user));
     }
     public static function getWholeTasksDataMonth(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
 
-        return Services\ClickupService::getWholeTasksListMonth($user, $date);
+        return  response()->json(Services\ClickupService::getWholeTasksListMonth($user, $date));
     }
 
     public static function getWholeCommentsData()
     {
         $user = Auth::user();
 
-        return Services\ClickupService::getWholeTasksComments($user);
+        return  response()->json(Services\ClickupService::getWholeTasksComments($user));
     }
     public static function getWholeCommentsMonth(Request $request)
     {
         $user = Auth::user();
-        $date = $request->has('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
 
-        return Services\ClickupService::getWholeTasksCommentsMonth($user, $date);
+        return  response()->json(Services\ClickupService::getWholeTasksCommentsMonth($user, $date));
     }
 }
