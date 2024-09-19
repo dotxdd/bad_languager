@@ -59,4 +59,11 @@ class TrelloDataController
 
         return response()->json(Services\TrelloService::getWholeTasksCommentsMonth($user, $date, $pageSize));
     }
+
+    public static function getMembers(Request $request)
+    {
+        $user = Auth::user();
+
+        return Services\TrelloService::getAllMembers($user);
+    }
 }

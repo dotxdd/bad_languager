@@ -15,10 +15,8 @@ class ClickupService
     public static function getClickupUserId($id){
         return ClickUpUser::where('clickup_user_id', $id)->first()->id;
     }
-    public static function getClickupListId($id){
 
-    }
-    public static function getToxicUsersRank(User $user, $pageSize = 10)
+    public static function getToxicUsersRank(User $user, $pageSize = 10, )
     {
         $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
         ->whereNotNull('clickup_report_table.clickup_task_id')
@@ -184,5 +182,10 @@ class ClickupService
             , clickup_lists.name as list_name, clickup_folders.name as folder_name,
             clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
             ->paginate($pageSize);
+    }
+
+    public static function getUsers(User $user)
+    {
+        return ClickUpUser::select('username', 'id')->get();
     }
 }

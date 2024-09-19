@@ -176,4 +176,10 @@ class TrelloService
                  trello_boards.name as board_name,  trello_members.name, trello_cards.url')
             ->paginate($pageSize);
     }
+
+    public static function getAllMembers(User $user)
+    {
+        return TrelloMember::select('id', 'name')->get();
+    }
 }
+

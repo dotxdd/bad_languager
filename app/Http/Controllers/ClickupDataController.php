@@ -49,4 +49,11 @@ class ClickupDataController
 
         return  response()->json(Services\ClickupService::getWholeTasksCommentsMonth($user, $date));
     }
+
+    public static function getUsers(Request $request)
+    {
+        $user = Auth::user();
+
+        return  Services\ClickupService::getUsers($user);
+    }
 }
