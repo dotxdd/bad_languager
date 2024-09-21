@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-         $table->string('open_ai_key');
+         $table->string('open_ai_key')->nullable();
         });
     }
 

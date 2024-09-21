@@ -82,7 +82,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/whole/tasks-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getWholeTasksDataMonth'])->name('trello.toxic.whole.tasks.monthly');
         Route::get('/whole/comments', [\App\Http\Controllers\TrelloDataController::class, 'getWholeCommentsData'])->name('trello.toxic.whole.comments');
         Route::get('/whole/comments-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getWholeCommentsMonth'])->name('trello.toxic.whole.comments.monthly');
-        Route::get('/members', [\App\Http\Controllers\TrelloDataController::class, 'getMembers'])->name('trello.members');
+        Route::get('/chart', [\App\Http\Controllers\TrelloDataController::class, 'getWholeDataChart'])->name('trello.get.chart');
+        Route::get('/chart-monthly', [\App\Http\Controllers\TrelloDataController::class, 'getMonthlyDataChart'])->name('trello.get.chart');
+
+        Route::get('/members', [\App\Http\Controllers\TrelloDataController::class, 'getMembers'])->name('trello.get.members');
 
     });
 
