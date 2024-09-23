@@ -16,13 +16,14 @@ class ClickupService
         return ClickUpUser::where('clickup_user_id', $id)->first()->id;
     }
 
-    public static function getToxicUsersRank(User $user, $pageSize = 10, )
+    public static function getToxicUsersRank(User $user, $pageSize = 10, ?array $users )
     {
         $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
         ->whereNotNull('clickup_report_table.clickup_task_id')
         ->where('clickup_report_table.is_explict', 0)
             ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_tasks.creator_id as clickup_user_id')
+            ->whereIn('clickup_tasks.creator_id', $users)
             ->groupBy('clickup_tasks.creator_id')
             ->get();
 
@@ -31,6 +32,7 @@ class ClickupService
             ->where('clickup_report_table.is_explict', 0)
         ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_comments.user_id as clickup_user_id')
+            ->whereIn('clickup_comments.user_id', $users)
             ->groupBy('clickup_comments.user_id')
             ->get();
 
@@ -66,7 +68,7 @@ class ClickupService
 
         return $paginatedItems;    }
 
-    public static function getToxicUsersRankMonth(User $user, Carbon $date, $pageSize = 10)
+    public static function getToxicUsersRankMonth(User $user, $pageSize = 10, Carbon $date , ?array $users)
     {
         $tasks = ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_task_id')
@@ -74,6 +76,7 @@ class ClickupService
             ->where('clickup_report_table.is_explict', 0)
             ->join('clickup_tasks', 'clickup_report_table.clickup_task_id', '=', 'clickup_tasks.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_tasks.creator_id as clickup_user_id')
+            ->whereIn('clickup_tasks.creator_id', $users)
             ->groupBy('clickup_tasks.creator_id')
             ->get();
 
@@ -83,6 +86,7 @@ class ClickupService
             ->where('clickup_report_table.is_explict', 0)
             ->join('clickup_comments', 'clickup_report_table.clickup_comment_id', '=', 'clickup_comments.id')
             ->selectRaw('count(clickup_report_table.id) as report_count, clickup_comments.user_id as clickup_user_id')
+            ->whereIn('clickup_comments.user_id', $users)
             ->groupBy('clickup_comments.user_id')
             ->get();
 
@@ -118,7 +122,7 @@ class ClickupService
 
         return $paginatedItems;    }
 
-     public static function getWholeTasksList(User $user, $pageSize = 10)
+     public static function getWholeTasksList(User $user, $pageSize = 10, ?array $users)
         {
             return ClickupReport::where('clickup_report_table.user_id', $user->id)
                 ->whereNotNull('clickup_report_table.clickup_task_id')
@@ -131,9 +135,10 @@ class ClickupService
                 ->selectRaw('clickup_tasks.name as task_name, clickup_tasks.description as task_description
                 , clickup_lists.name as list_name, clickup_folders.name as folder_name,
                 clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+                ->whereIn('clickup_tasks.creator_id', $users)
                 ->paginate($pageSize);
         }
-    public static function getWholeTasksListMonth(User $user, Carbon $date, $pageSize = 10)
+    public static function getWholeTasksListMonth(User $user,$pageSize = 10, Carbon $date,  ?array $users)
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_task_id')
@@ -147,10 +152,11 @@ class ClickupService
             ->selectRaw('clickup_tasks.name as task_name, clickup_tasks.description as task_description
             , clickup_lists.name as list_name, clickup_folders.name as folder_name,
             clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+            ->whereIn('clickup_tasks.creator_id', $users)
             ->paginate($pageSize);
     }
 
-    public static function getWholeTasksComments(User $user, $pageSize = 10)
+    public static function getWholeTasksComments(User $user, $pageSize = 10, ?array $users)
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_comment_id')
@@ -164,9 +170,10 @@ class ClickupService
             ->selectRaw('clickup_tasks.name as task_name, clickup_comments.comment as task_comments
                 , clickup_lists.name as list_name, clickup_folders.name as folder_name,
                 clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+            ->whereIn('clickup_comments.user_id', $users)
             ->paginate($pageSize);
     }
-    public static function getWholeTasksCommentsMonth(User $user, Carbon $date, $pageSize = 10)
+    public static function getWholeTasksCommentsMonth(User $user,$pageSize=10, Carbon $date,  ?array $users)
     {
         return ClickupReport::where('clickup_report_table.user_id', $user->id)
             ->whereNotNull('clickup_report_table.clickup_comment_id')
@@ -181,11 +188,12 @@ class ClickupService
             ->selectRaw('clickup_tasks.name as task_name, clickup_comments.comment as task_comments
             , clickup_lists.name as list_name, clickup_folders.name as folder_name,
             clickup_spaces.name as space_name, clickup_users.username, clickup_tasks.url')
+            ->whereIn('clickup_comments.user_id', $users)
             ->paginate($pageSize);
     }
 
     public static function getUsers(User $user)
     {
-        return ClickUpUser::select('username', 'id')->get();
+        return ClickUpUser::select('username', 'id')->where('user_id', $user->id)->get();
     }
 }

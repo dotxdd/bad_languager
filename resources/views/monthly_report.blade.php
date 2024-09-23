@@ -2,6 +2,14 @@
     <div class="container mx-auto py-8">
         <h2 class="text-2xl font-bold mb-4">Monthly ClickUp Report</h2>
 
+        <!-- User Filter -->
+        <div class="mb-6">
+            <label for="user-filter" class="block text-sm font-medium text-gray-700">Filter by Users:</label>
+            <select id="user-filter" class="mt-1 block w-64 p-2 border border-gray-300 rounded-lg shadow-sm">
+                <option value="all">Wszyscy</option>
+            </select>
+        </div>
+
         <div class="mb-6">
             <label for="month-picker" class="block text-sm font-medium text-gray-700">Select Month:</label>
             <input type="month" id="month-picker" class="mt-1 block w-64 p-2 border border-gray-300 rounded-lg shadow-sm">
@@ -60,6 +68,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const monthPicker = document.getElementById('month-picker');
+            const userFilter = document.getElementById('user-filter');
 
             const today = new Date();
             const currentMonth = today.toISOString().slice(0, 7);
@@ -83,19 +92,46 @@
                 }
             ];
 
-            endpoints.forEach(endpoint => {
-                loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, currentMonth);
-            });
+            // Load initial data
+            loadInitialData(currentMonth);
+
+            // Fetch users and populate the user filter
+            fetch('{{ route('clickup.users') }}')
+                .then(response => response.json())
+                .then(users => {
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.text = user.username;
+                        userFilter.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching users:', error));
 
             monthPicker.addEventListener('change', function () {
                 const selectedMonth = monthPicker.value;
-                endpoints.forEach(endpoint => {
-                    loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, selectedMonth);
-                });
+                const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
+                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, selectedMonth, selectedUser));
             });
 
-            function loadData(url, tableId, paginationId, page, month) {
-                fetch(`${url}?page=${page}&month=${month}`)
+            userFilter.addEventListener('change', function () {
+                const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
+                const selectedMonth = monthPicker.value;
+                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, selectedMonth, selectedUser));
+            });
+
+            function loadInitialData(month) {
+                const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
+                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, month, selectedUser));
+            }
+
+            function loadData(url, tableId, paginationId, page, month, users = []) {
+                let query = `${url}?page=${page}&month=${month}`;
+                if (users.length > 0) {
+                    query += `&users=${users.join(',')}`;
+                }
+
+                fetch(query)
                     .then(response => response.json())
                     .then(data => {
                         const tableBody = document.querySelector(`#${tableId} tbody`);
@@ -131,23 +167,29 @@
                             }
                         });
 
-                        setupPagination(paginationDiv, data.links, url, tableId, paginationId, month);
+                        setupPagination(paginationDiv, data.links, url, tableId, paginationId, month, users);
                     })
                     .catch(error => console.error('Error fetching data:', error));
             }
 
-            function setupPagination(paginationDiv, links, url, tableId, paginationId, month) {
+            function setupPagination(paginationDiv, links, url, tableId, paginationId, month, users = []) {
                 paginationDiv.innerHTML = '';
+
                 links.forEach(link => {
                     const pageButton = document.createElement('button');
-                    pageButton.innerHTML = link.label.replace('&laquo;', '«').replace('&raquo;', '»');
-                    pageButton.className = `mx-1 px-3 py-1 border rounded-lg ${link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`;
-                    pageButton.addEventListener('click', () => {
-                        if (!link.active && link.url) {
-                            const page = new URL(link.url).searchParams.get('page');
-                            loadData(url, tableId, paginationId, page, month);
-                        }
+                    pageButton.classList.add('px-2', 'py-1', 'mx-1', 'bg-blue-500', 'text-white', 'rounded');
+                    pageButton.textContent = link.label;
+                    pageButton.disabled = !link.url;
+
+                    if (link.active) {
+                        pageButton.classList.add('bg-blue-700');
+                    }
+
+                    pageButton.addEventListener('click', function () {
+                        const page = new URL(link.url).searchParams.get('page');
+                        loadData(url, tableId, paginationId, page, month, users);
                     });
+
                     paginationDiv.appendChild(pageButton);
                 });
             }

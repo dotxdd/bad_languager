@@ -68,7 +68,7 @@ class TrelloDataController
         if (!$users){
             $users = TrelloMember::pluck('id')->toArray();
         }
-
+    dd($users);
         return response()->json(Services\TrelloService::getWholeTasksComments($user, $pageSize, $users));
     }
 

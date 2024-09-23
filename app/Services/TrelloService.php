@@ -157,7 +157,7 @@ class TrelloService
             ->paginate($pageSize);
     }
 
-    public static function getWholeTasksComments(User $user, $pageSize = 10, ?array $users)
+    public static function getWholeTasksComments(User $user, $pageSize = 10, array $users)
     {
         return TrelloReport::where('trello_report_table.user_id', $user->id)
             ->whereNotNull('trello_report_table.trello_comment_id')
@@ -209,7 +209,7 @@ class TrelloService
     }
     public static function getAllMembers(User $user)
     {
-        return TrelloMember::select('id', 'name')->get();
+        return TrelloMember::select('id', 'name')->where('user_id', $user->id)->get();
     }
 }
 
