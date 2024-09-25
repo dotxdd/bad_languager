@@ -192,6 +192,25 @@ class ClickupService
             ->paginate($pageSize);
     }
 
+    public static function getWholeDataChart(User $user){
+
+        return ClickupReport::where('clickup_report_table.user_id', $user->id)
+            ->selectRaw('count(id) as reports, created_at')
+            ->groupBy('created_at')
+            ->get();
+
+    }
+
+    public static function getMonthlyDataChart(User $user, Carbon $date){
+
+        return ClickupReport::where('clickup_report_table.user_id', $user->id)
+            ->selectRaw('count(id) as reports, created_at')
+            ->whereRaw("DATE_FORMAT(clickup_report_table.created_at, '%Y-%m') = ?", [$date->format('Y-m')])
+            ->groupBy('created_at')
+            ->get();
+
+    }
+
     public static function getUsers(User $user)
     {
         return ClickUpUser::select('username', 'id')->where('user_id', $user->id)->get();

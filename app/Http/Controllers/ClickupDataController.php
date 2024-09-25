@@ -85,6 +85,19 @@ class ClickupDataController
 
         return  response()->json(Services\ClickupService::getWholeTasksCommentsMonth($user, $pageSize, $date, $users));
     }
+    public static function getMonthlyDataChart(Request $request)
+    {
+        $user = Auth::user();
+        $date = $request->has('month') ? Carbon::parse($request->input('month')) : Carbon::now();
+
+        return response()->json(Services\ClickupService::getMonthlyDataChart($user, $date));
+    }
+    public static function getWholeDataChart(Request $request)
+    {
+        $user = Auth::user();
+
+        return response()->json(Services\ClickupService::getWholeDataChart($user));
+    }
 
     public static function getUsers()
     {

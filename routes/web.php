@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/whole/tasks-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getWholeTasksDataMonth'])->name('clickup.toxic.whole.tasks.monthly');
         Route::get('/whole/comments', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsData'])->name('clickup.toxic.whole.comments');
         Route::get('/whole/comments-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getWholeCommentsMonth'])->name('clickup.toxic.whole.comments.monthly');
+        Route::get('/chart', [\App\Http\Controllers\ClickupDataController::class, 'getWholeDataChart'])->name('clickup.get.chart');
+        Route::get('/chart-monthly', [\App\Http\Controllers\ClickupDataController::class, 'getMonthlyDataChart'])->name('clickup.get.chart');
+
         Route::get('/users', [\App\Http\Controllers\ClickupDataController::class, 'getUsers'])->name('clickup.users');
 
     });

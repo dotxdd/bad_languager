@@ -15,60 +15,81 @@
             <input type="month" id="month-picker" class="mt-1 block w-64 p-2 border border-gray-300 rounded-lg shadow-sm">
         </div>
 
+        <!-- Toxic Users Table -->
         <div class="mb-8">
             <h3 class="text-xl font-semibold mb-2">Toxic Users</h3>
-            <table id="users-table" class="min-w-full bg-white border rounded-lg">
-                <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reports</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200"></tbody>
-            </table>
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table id="users-table" class="min-w-full bg-white border-collapse table-auto rounded-lg">
+                    <thead class="bg-gray-200 text-gray-700 uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Name</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Email</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Reports</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
             <div id="users-pagination" class="mt-4"></div>
         </div>
 
+        <!-- Chart Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-semibold mb-2">Monthly Activity Chart</h3>
+            <canvas id="activity-chart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Tasks Table -->
         <div class="mb-8">
             <h3 class="text-xl font-semibold mb-2">Tasks</h3>
-            <table id="tasks-table" class="min-w-full bg-white border rounded-lg">
-                <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">List</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created By</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Link</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200"></tbody>
-            </table>
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table id="tasks-table" class="min-w-full bg-white border-collapse table-auto rounded-lg">
+                    <thead class="bg-gray-200 text-gray-700 uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Task Name</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Description</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">List</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Created By</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Link</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
             <div id="tasks-pagination" class="mt-4"></div>
         </div>
 
+        <!-- Comments Table -->
         <div>
             <h3 class="text-xl font-semibold mb-2">Comments</h3>
-            <table id="comments-table" class="min-w-full bg-white border rounded-lg">
-                <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comment</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">List</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created By</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Link</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200"></tbody>
-            </table>
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table id="comments-table" class="min-w-full bg-white border-collapse table-auto rounded-lg">
+                    <thead class="bg-gray-200 text-gray-700 uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Comment</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Task</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">List</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Created By</th>
+                        <th class="px-6 py-3 text-left font-semibold border-b">Link</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
             <div id="comments-pagination" class="mt-4"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const monthPicker = document.getElementById('month-picker');
             const userFilter = document.getElementById('user-filter');
+            const chartCtx = document.getElementById('activity-chart').getContext('2d');
+            let activityChart;
 
             const today = new Date();
             const currentMonth = today.toISOString().slice(0, 7);
@@ -89,13 +110,11 @@
                     url: '{{ route('clickup.toxic.whole.comments.monthly') }}',
                     tableId: 'comments-table',
                     paginationId: 'comments-pagination'
-                }
+                },
             ];
 
-            // Load initial data
             loadInitialData(currentMonth);
 
-            // Fetch users and populate the user filter
             fetch('{{ route('clickup.users') }}')
                 .then(response => response.json())
                 .then(users => {
@@ -111,18 +130,89 @@
             monthPicker.addEventListener('change', function () {
                 const selectedMonth = monthPicker.value;
                 const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
-                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, selectedMonth, selectedUser));
+                loadInitialData(selectedMonth, selectedUser);
             });
 
             userFilter.addEventListener('change', function () {
                 const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
                 const selectedMonth = monthPicker.value;
-                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, selectedMonth, selectedUser));
+                loadInitialData(selectedMonth, selectedUser);
             });
 
-            function loadInitialData(month) {
-                const selectedUser = userFilter.value === 'all' ? [] : [userFilter.value];
-                endpoints.forEach(endpoint => loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, month, selectedUser));
+            function loadInitialData(month, users = []) {
+                endpoints.forEach(endpoint => {
+                    loadData(endpoint.url, endpoint.tableId, endpoint.paginationId, 1, month, users);
+                });
+                loadChartData(month); // Ensure this line is included to load chart data
+            }
+
+            function loadChartData(month) {
+                fetch('{{ route('clickup.get.chart') }}?month=' + month)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Chart data:', data); // Log the fetched data for debugging
+
+                        // Create an array of dates for the selected month
+                        const daysInMonth = new Date(today.getFullYear(), new Date(month).getMonth() + 1, 0).getDate();
+                        const dates = Array.from({ length: daysInMonth }, (_, i) =>
+                            new Date(today.getFullYear(), new Date(month).getMonth(), i + 1).toISOString().split('T')[0]
+                        );
+
+                        const reportCounts = new Array(daysInMonth).fill(0); // Initialize report counts
+
+                        data.forEach(item => {
+                            const reportDate = item.created_at.split('T')[0];
+                            const index = dates.indexOf(reportDate);
+                            if (index !== -1) {
+                                reportCounts[index] += item.reports; // Assuming reports is a number
+                            }
+                        });
+
+                        // Check if activityChart already exists and destroy it
+                        if (activityChart) {
+                            activityChart.destroy();
+                        }
+
+                        // Create the new chart
+                        activityChart = new Chart(chartCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: dates,
+                                datasets: [{
+                                    label: 'Zgłoszeń dziennie',
+                                    data: reportCounts,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Liczba zgłoszeń'
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Data'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching chart data:', error);
+                    });
             }
 
             function loadData(url, tableId, paginationId, page, month, users = []) {
@@ -174,22 +264,16 @@
 
             function setupPagination(paginationDiv, links, url, tableId, paginationId, month, users = []) {
                 paginationDiv.innerHTML = '';
-
                 links.forEach(link => {
                     const pageButton = document.createElement('button');
-                    pageButton.classList.add('px-2', 'py-1', 'mx-1', 'bg-blue-500', 'text-white', 'rounded');
-                    pageButton.textContent = link.label;
-                    pageButton.disabled = !link.url;
-
-                    if (link.active) {
-                        pageButton.classList.add('bg-blue-700');
-                    }
-
-                    pageButton.addEventListener('click', function () {
-                        const page = new URL(link.url).searchParams.get('page');
-                        loadData(url, tableId, paginationId, page, month, users);
+                    pageButton.innerText = link.label.replace('&laquo;', '«').replace('&raquo;', '»');
+                    pageButton.className = `mx-1 px-3 py-1 border rounded-lg ${link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`;
+                    pageButton.addEventListener('click', () => {
+                        if (!link.active && link.url) {
+                            const page = new URL(link.url).searchParams.get('page');
+                            loadData(url, tableId, paginationId, page, month, users);
+                        }
                     });
-
                     paginationDiv.appendChild(pageButton);
                 });
             }
