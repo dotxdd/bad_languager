@@ -31,7 +31,7 @@
                     <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Id</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Reports</th>
                     </tr>
                     </thead>
@@ -234,9 +234,9 @@
                                 tableBody.innerHTML += `
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.comment}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.task_name}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.card_name}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.board_name}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.user_name}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.name}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600"><a href="${item.url}" target="_blank">Link</a></td>
                                     </tr>`;
                             }

@@ -248,10 +248,10 @@
                             } else if (tableId === 'comments-table') {
                                 tableBody.innerHTML += `
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.comment}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.task_comments}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.task_name}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.list_name}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.created_by}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.username}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600"><a href="${item.url}" target="_blank">Link</a></td>
                                     </tr>`;
                             }

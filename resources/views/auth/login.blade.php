@@ -21,7 +21,7 @@
         }
 
         h1 {
-            font-family: 'MyRetroFont', cursive;
+            font-family: 'Press Start 2P', cursive;
             color: #00008B;
             font-size: 2rem;
             margin-bottom: 2rem;

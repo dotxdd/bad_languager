@@ -8,7 +8,7 @@ use App\Models\ClickupTeam;
 use App\Models\ClickUpSpace;
 use GuzzleHttp\Client;
 
-class FetchSpacesForAllUserTeams extends Command
+class FetchSpacesForTeams extends Command
 {
     protected $signature = 'fetch:spaces-for-all-user-teams';
     protected $description = 'Fetch all spaces for teams of all users from ClickUp API';

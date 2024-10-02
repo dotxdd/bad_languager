@@ -83,3 +83,126 @@ test('correct password must be provided to delete account', function () {
 
     $this->assertNotNull($user->fresh());
 });
+test('Użytkownik może dodać klucz api open ai', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'open_ai_key' => 'sdasda-342342342sdasd'
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
+    $this->assertSame('sdasda-342342342sdasd', $user->open_ai_key);
+
+    $this->assertNull($user->email_verified_at);
+});
+
+test('Użytkownik nie może zaktualizować roli admina', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'is_admin' => 1
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
+    $this->assertNotSame(1, $user->is_admin);
+
+    $this->assertNull($user->email_verified_at);
+});
+
+test('Użytkownik może chcieć otrzymać wszystkie maile', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'is_downloaded_trello_mail' => 1,
+            'is_downloaded_clickup_mail' => 1,
+            'is_reportable_mail' => 1
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
+    $this->assertSame(1, $user->is_downloaded_trello_mail);
+    $this->assertSame(1, $user->is_downloaded_clickup_mail);
+    $this->assertSame(1, $user->is_reportable_mail);
+});
+test('Użytkownik może nie chcieć otrzymać wszystkich maile', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'is_downloaded_trello_mail' => 0,
+            'is_downloaded_clickup_mail' => 0,
+            'is_reportable_mail' => 0
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
+    $this->assertNotSame(1, $user->is_downloaded_trello_mail);
+    $this->assertNotSame(1, $user->is_downloaded_clickup_mail);
+    $this->assertNotSame(1, $user->is_reportable_mail);
+});
+test('Użytkownik może  chcieć otrzymać niektóre maile', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'is_downloaded_trello_mail' => 0,
+            'is_downloaded_clickup_mail' => 1,
+            'is_reportable_mail' => 1
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
+    $this->assertNotSame(1, $user->is_downloaded_trello_mail);
+    $this->assertNotSame(0, $user->is_downloaded_clickup_mail);
+    $this->assertNotSame(0, $user->is_reportable_mail);
+});
