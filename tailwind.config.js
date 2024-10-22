@@ -10,7 +10,8 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                retro: ['"Press Start 2P"', 'cursive'],  // Retro font
+               // retro: ['"Press Start 2P"', 'cursive'],  // Retro font
+                retro: ['"Coda Caption"', 'sans-serif'], // Dodaj nową czcionkę retro
             },
         },
     },

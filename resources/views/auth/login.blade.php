@@ -90,7 +90,6 @@
 
     <div class="container">
         <!-- Title -->
-        <h1>bad_languager</h1>
 
         <!-- Login Form -->
         <div class="form-container">

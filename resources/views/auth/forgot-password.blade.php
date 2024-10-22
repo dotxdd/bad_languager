@@ -76,8 +76,6 @@
     </style>
 
     <div class="container">
-        <!-- Title -->
-        <h1>bad_languager</h1>
 
         <div class="form-container">
             <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
